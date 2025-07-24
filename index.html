@@ -81,13 +81,30 @@
       return { x, y: -y };
     }
 
-    // Adjust scale and jitter based on screen size
-    const isSmallScreen = window.innerWidth < 400;
-    const heartScale = isSmallScreen ? 10 : 22;
-    const jitterAmount = isSmallScreen ? 4 : 8;  // smaller jitter on small screens
-    const baseFontSize = isSmallScreen ? 24 : 60;
-    const heartDotRadius = isSmallScreen ? 1.5 : 2.5;
-    const textDotRadius = isSmallScreen ? 1.2 : 2;
+    // Compute scaling to fit screen with margin
+    // We will fit the heart and text inside about 80% of width and height
+    const maxWidth = canvas.width * 0.8;
+    const maxHeight = canvas.height * 0.8;
+
+    // The heart shape width and height in its base form (before scaling)
+    const heartBaseWidth = 32;  // from -16 to +16 approx
+    const heartBaseHeight = 26; // from base formula approx
+
+    // Scale to fit maxWidth and maxHeight respecting aspect ratio
+    const scaleX = maxWidth / heartBaseWidth;
+    const scaleY = maxHeight / heartBaseHeight;
+    const heartScale = Math.min(scaleX, scaleY);
+
+    // Text font size scaled relative to heartScale (rough guess)
+    const baseFontSize = heartScale * 2.5;  // adjust this factor if needed
+
+    // Jitter and dot sizes smaller for fitting nicely
+    const jitterAmount = heartScale * 0.3; 
+    const heartDotRadius = heartScale * 0.15;
+    const textDotRadius = heartScale * 0.1;
+
+    // Number of heart dots (75% dots)
+    const heartDotCount = Math.floor(DOT_COUNT * 0.75);
 
     function createHeartPositions(centerX, centerY, scale, count) {
       const positions = [];
@@ -104,8 +121,6 @@
       return positions;
     }
 
-    // 75% dots to heart for thickness
-    const heartDotCount = Math.floor(DOT_COUNT * 0.75);
     const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
 
     function textToDots(text, fontSize, spacing = 6) {
@@ -197,8 +212,8 @@
 
         if (showHeart) {
           if (i < heartDotCount) {
-            const waveX = Math.sin(time * 2 + dot.phase) * 3;
-            const waveY = Math.cos(time * 3 + dot.phase) * 3;
+            const waveX = Math.sin(time * 2 + dot.phase) * heartScale * 0.15;
+            const waveY = Math.cos(time * 3 + dot.phase) * heartScale * 0.15;
             dot.tx = dot.baseTx + waveX;
             dot.ty = dot.baseTy + waveY;
           } else {
