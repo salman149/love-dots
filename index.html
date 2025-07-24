@@ -71,7 +71,7 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const DOT_COUNT = 2200; // More dots for detail
+    const DOT_COUNT = 2200; 
     const dots = [];
     const PINK = 'rgb(255, 105, 180)';
 
@@ -81,7 +81,6 @@
       return { x, y: -y };
     }
 
-    // Fit heart + text inside 80% canvas area
     const maxWidth = canvas.width * 0.8;
     const maxHeight = canvas.height * 0.8;
 
@@ -92,14 +91,11 @@
     const scaleY = maxHeight / heartBaseHeight;
     const heartScale = Math.min(scaleX, scaleY);
 
-    // Increase font size by 1.3x for bigger letters
     const baseFontSize = heartScale * 2.5 * 1.3;
     const jitterAmount = heartScale * 0.45;
     const heartDotRadius = heartScale * 0.15;
-
     const textDotRadius = heartScale * 0.22;
 
-    // Dots assignment: 60% heart, 40% text
     const heartDotCount = Math.floor(DOT_COUNT * 0.6);
     const textDotCount = DOT_COUNT - heartDotCount;
 
@@ -118,7 +114,6 @@
       return positions;
     }
 
-    // Very dense text dots with spacing=3 for thickness
     function textToDots(text, fontSize, spacing = 3) {
       const offCanvas = document.createElement('canvas');
       const offCtx = offCanvas.getContext('2d');
@@ -156,10 +151,8 @@
 
     const textData = textToDots('I LOVE YOU', baseFontSize, 3);
 
-    // Add extra horizontal spacing multiplier to spread letters out (1.15 means 15% more space)
     const letterSpacingFactor = 1.15;
 
-    // Map text dots with extra spacing
     const textPositions = textData.positions.slice(0, textDotCount).map(p => ({
       x: canvas.width / 2 - (textData.textWidth * letterSpacingFactor) / 2 + p.x * letterSpacingFactor,
       y: canvas.height / 2 - textData.textHeight / 2 + p.y
@@ -179,7 +172,7 @@
         y: Math.random() * canvas.height,
         tx: Math.random() * canvas.width,
         ty: Math.random() * canvas.height,
-        speed: Math.random() * 0.035 + 0.015,
+        speed: Math.random() * 0.07 + 0.03,  // faster speed
         baseTx: 0,
         baseTy: 0,
         phase: Math.random() * Math.PI * 2
@@ -216,8 +209,8 @@
 
         if (showHeart) {
           if (i < heartDotCount) {
-            const waveX = Math.sin(time * 2 + dot.phase) * heartScale * 0.15;
-            const waveY = Math.cos(time * 3 + dot.phase) * heartScale * 0.15;
+            const waveX = Math.sin(time * 4 + dot.phase) * heartScale * 0.25;
+            const waveY = Math.cos(time * 6 + dot.phase) * heartScale * 0.25;
             dot.tx = dot.baseTx + waveX;
             dot.ty = dot.baseTy + waveY;
           } else {
