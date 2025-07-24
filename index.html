@@ -71,7 +71,7 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const DOT_COUNT = 1200;
+    const DOT_COUNT = 1500; // increase total dots for better detail
     const dots = [];
     const PINK = 'rgb(255, 105, 180)';
 
@@ -81,30 +81,24 @@
       return { x, y: -y };
     }
 
-    // Compute scaling to fit screen with margin
-    // We will fit the heart and text inside about 80% of width and height
+    // Fit heart + text inside 80% canvas area
     const maxWidth = canvas.width * 0.8;
     const maxHeight = canvas.height * 0.8;
 
-    // The heart shape width and height in its base form (before scaling)
-    const heartBaseWidth = 32;  // from -16 to +16 approx
-    const heartBaseHeight = 26; // from base formula approx
+    const heartBaseWidth = 32;
+    const heartBaseHeight = 26;
 
-    // Scale to fit maxWidth and maxHeight respecting aspect ratio
     const scaleX = maxWidth / heartBaseWidth;
     const scaleY = maxHeight / heartBaseHeight;
     const heartScale = Math.min(scaleX, scaleY);
 
-    // Text font size scaled relative to heartScale (rough guess)
-    const baseFontSize = heartScale * 2.5;  // adjust this factor if needed
-
-    // Jitter and dot sizes smaller for fitting nicely
-    const jitterAmount = heartScale * 0.3; 
+    const baseFontSize = heartScale * 2.5;
+    const jitterAmount = heartScale * 0.45; // more jitter for thickness
     const heartDotRadius = heartScale * 0.15;
-    const textDotRadius = heartScale * 0.1;
+    const textDotRadius = heartScale * 0.12;
 
-    // Number of heart dots (75% dots)
-    const heartDotCount = Math.floor(DOT_COUNT * 0.75);
+    // Increase heart dots to 85% of total dots for thickness
+    const heartDotCount = Math.floor(DOT_COUNT * 0.85);
 
     function createHeartPositions(centerX, centerY, scale, count) {
       const positions = [];
@@ -121,9 +115,8 @@
       return positions;
     }
 
-    const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
-
-    function textToDots(text, fontSize, spacing = 6) {
+    // Decrease spacing for denser text dots
+    function textToDots(text, fontSize, spacing = 4) {
       const offCanvas = document.createElement('canvas');
       const offCtx = offCanvas.getContext('2d');
       offCanvas.width = 1000;
@@ -155,6 +148,8 @@
 
       return { positions, textWidth, textHeight };
     }
+
+    const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
 
     const textData = textToDots('I LOVE YOU', baseFontSize);
     const textPositions = textData.positions.map(p => ({
