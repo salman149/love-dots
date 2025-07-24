@@ -71,7 +71,7 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const DOT_COUNT = 1000;
+    const DOT_COUNT = 1200;
     const dots = [];
     const PINK = 'rgb(255, 105, 180)';
 
@@ -81,15 +81,29 @@
       return { x, y: -y };
     }
 
+    // More jitter and scale for thicker heart
     function createHeartPositions(centerX, centerY, scale, count) {
       const positions = [];
       for (let i = 0; i < count; i++) {
         const t = Math.random() * Math.PI * 2;
         const { x, y } = heartShape(t);
-        positions.push({ x: centerX + x * scale, y: centerY + y * scale });
+        const offsetX = (Math.random() - 0.5) * 8; // ±4 px jitter (a bit more)
+        const offsetY = (Math.random() - 0.5) * 8;
+        positions.push({
+          x: centerX + x * scale + offsetX,
+          y: centerY + y * scale + offsetY
+        });
       }
       return positions;
     }
+
+    const isSmallScreen = window.innerWidth < 400;
+    const heartScale = isSmallScreen ? 14 : 22; // slightly bigger scale
+    const baseFontSize = isSmallScreen ? 28 : 60;
+
+    // Allocate 75% of dots to heart for thickness
+    const heartDotCount = Math.floor(DOT_COUNT * 0.75);
+    const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
 
     function textToDots(text, fontSize, spacing = 6) {
       const offCanvas = document.createElement('canvas');
@@ -124,10 +138,6 @@
       return { positions, textWidth, textHeight };
     }
 
-    const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT / 2);
-
-    // Smaller font size on iPhone, bigger otherwise
-    const baseFontSize = window.innerWidth < 400 ? 30 : 60;
     const textData = textToDots('I LOVE YOU', baseFontSize);
     const textPositions = textData.positions.map(p => ({
       x: canvas.width / 2 - textData.textWidth / 2 + p.x,
@@ -137,7 +147,7 @@
     let finalPositions = [...heartPositions, ...textPositions];
     while (finalPositions.length < DOT_COUNT) {
       finalPositions = finalPositions.concat(
-        createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT - finalPositions.length)
+        createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, DOT_COUNT - finalPositions.length)
       );
     }
 
@@ -147,7 +157,10 @@
         y: Math.random() * canvas.height,
         tx: Math.random() * canvas.width,
         ty: Math.random() * canvas.height,
-        speed: Math.random() * 0.035 + 0.015  // a bit faster easing than before
+        speed: Math.random() * 0.035 + 0.015,
+        baseTx: 0,
+        baseTy: 0,
+        phase: Math.random() * Math.PI * 2
       });
     }
 
@@ -156,13 +169,16 @@
     function startAnimation() {
       showHeart = true;
       pressMessage.style.opacity = 0;
-
       setTimeout(() => {
         pressMessage.style.display = 'none';
       }, 1000);
-
       window.removeEventListener('click', startAnimation);
       window.removeEventListener('touchstart', startAnimation);
+
+      for (let i = 0; i < DOT_COUNT; i++) {
+        dots[i].baseTx = finalPositions[i % finalPositions.length].x;
+        dots[i].baseTy = finalPositions[i % finalPositions.length].y;
+      }
     }
 
     window.addEventListener('click', startAnimation);
@@ -171,20 +187,31 @@
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const time = Date.now() / 1000;
+
       for (let i = 0; i < DOT_COUNT; i++) {
         const dot = dots[i];
+
         if (showHeart) {
-          dot.tx = finalPositions[i % finalPositions.length].x;
-          dot.ty = finalPositions[i % finalPositions.length].y;
+          if (i < heartDotCount) {
+            const waveX = Math.sin(time * 2 + dot.phase) * 3;
+            const waveY = Math.cos(time * 3 + dot.phase) * 3;
+            dot.tx = dot.baseTx + waveX;
+            dot.ty = dot.baseTy + waveY;
+          } else {
+            dot.tx = dot.baseTx;
+            dot.ty = dot.baseTy;
+          }
         } else {
-          dot.tx += Math.sin(Date.now() / 1500 + i) * 0.05;
-          dot.ty += Math.cos(Date.now() / 1500 + i) * 0.05;
+          dot.tx += Math.sin(time / 1.5 + i) * 0.05;
+          dot.ty += Math.cos(time / 1.5 + i) * 0.05;
         }
+
         dot.x += (dot.tx - dot.x) * dot.speed;
         dot.y += (dot.ty - dot.y) * dot.speed;
 
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, 2, 0, Math.PI * 2);
+        ctx.arc(dot.x, dot.y, i < heartDotCount ? 2.5 : 2, 0, Math.PI * 2); // Slightly bigger dots for heart
         ctx.fillStyle = PINK;
         ctx.fill();
       }
@@ -196,3 +223,4 @@
   </script>
 </body>
 </html>
+
