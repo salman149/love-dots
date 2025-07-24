@@ -28,6 +28,7 @@ const DOT_COUNT = 1000;
 const dots = [];
 const PINK = 'rgb(255, 105, 180)';
 
+// Heart shape parametric curve
 function heartShape(t) {
   const x = 16 * Math.sin(t) ** 3;
   const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
@@ -44,7 +45,7 @@ function createHeartPositions(centerX, centerY, scale, count) {
   return positions;
 }
 
-// Create text to dots
+// Convert text into dot positions
 function textToDots(text, fontSize, spacing = 6) {
   const offCanvas = document.createElement('canvas');
   const offCtx = offCanvas.getContext('2d');
@@ -52,8 +53,8 @@ function textToDots(text, fontSize, spacing = 6) {
   offCanvas.height = 200;
   offCtx.font = `bold ${fontSize}px Arial`;
   offCtx.fillStyle = 'white';
-  offCtx.fillText(text, 50, 100);
-
+  offCtx.fillText(text, 0, fontSize);
+  
   const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height).data;
   const positions = [];
   for (let y = 0; y < offCanvas.height; y += spacing) {
@@ -64,15 +65,29 @@ function textToDots(text, fontSize, spacing = 6) {
       }
     }
   }
-  return { positions, width: offCanvas.width, height: offCanvas.height };
+
+  // Calculate text bounding box
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  positions.forEach(p => {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  });
+
+  const textWidth = maxX - minX;
+  const textHeight = maxY - minY;
+
+  return { positions, textWidth, textHeight };
 }
 
 const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT / 2);
 const textData = textToDots('I LOVE YOU', 100);
 const textPositions = textData.positions.map(p => ({
-  x: canvas.width / 2 - textData.width / 2 + p.x,
-  y: canvas.height / 2 - textData.height / 2 + p.y
+  x: canvas.width / 2 - textData.textWidth / 2 + p.x,
+  y: canvas.height / 2 - textData.textHeight / 2 + p.y
 }));
+
 let finalPositions = [...heartPositions, ...textPositions];
 while (finalPositions.length < DOT_COUNT) {
   finalPositions = finalPositions.concat(
