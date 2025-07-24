@@ -81,14 +81,21 @@
       return { x, y: -y };
     }
 
-    // More jitter and scale for thicker heart
+    // Adjust scale and jitter based on screen size
+    const isSmallScreen = window.innerWidth < 400;
+    const heartScale = isSmallScreen ? 10 : 22;
+    const jitterAmount = isSmallScreen ? 4 : 8;  // smaller jitter on small screens
+    const baseFontSize = isSmallScreen ? 24 : 60;
+    const heartDotRadius = isSmallScreen ? 1.5 : 2.5;
+    const textDotRadius = isSmallScreen ? 1.2 : 2;
+
     function createHeartPositions(centerX, centerY, scale, count) {
       const positions = [];
       for (let i = 0; i < count; i++) {
         const t = Math.random() * Math.PI * 2;
         const { x, y } = heartShape(t);
-        const offsetX = (Math.random() - 0.5) * 8; // ±4 px jitter (a bit more)
-        const offsetY = (Math.random() - 0.5) * 8;
+        const offsetX = (Math.random() - 0.5) * jitterAmount;
+        const offsetY = (Math.random() - 0.5) * jitterAmount;
         positions.push({
           x: centerX + x * scale + offsetX,
           y: centerY + y * scale + offsetY
@@ -97,11 +104,7 @@
       return positions;
     }
 
-    const isSmallScreen = window.innerWidth < 400;
-    const heartScale = isSmallScreen ? 14 : 22; // slightly bigger scale
-    const baseFontSize = isSmallScreen ? 28 : 60;
-
-    // Allocate 75% of dots to heart for thickness
+    // 75% dots to heart for thickness
     const heartDotCount = Math.floor(DOT_COUNT * 0.75);
     const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
 
@@ -211,7 +214,7 @@
         dot.y += (dot.ty - dot.y) * dot.speed;
 
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, i < heartDotCount ? 2.5 : 2, 0, Math.PI * 2); // Slightly bigger dots for heart
+        ctx.arc(dot.x, dot.y, i < heartDotCount ? heartDotRadius : textDotRadius, 0, Math.PI * 2);
         ctx.fillStyle = PINK;
         ctx.fill();
       }
@@ -223,4 +226,3 @@
   </script>
 </body>
 </html>
-
