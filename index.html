@@ -1,55 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Smooth Centered Text</title>
-<style>
-  /* Make the body full viewport height and use flex to center */
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    display: flex;
-    justify-content: center; /* horizontal center */
-    align-items: center;     /* vertical center */
-    background: #111;
-  }
-
-  /* The text container */
-  .love-text {
-    font-family: 'Arial', sans-serif;
-    color: #ff2d55;
-    font-weight: 700;
-    font-size: 8vw; /* responsive font size based on viewport width */
-    text-align: center;
-    animation: pulse 2s ease-in-out infinite;
-    user-select: none;
-  }
-
-  /* Smaller font on very small screens like iPhones */
-  @media (max-width: 400px) {
-    .love-text {
-      font-size: 12vw;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Press to See Animated "I love you"</title>
+  <style>
+    /* Fullscreen flex center */
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      color: #ff2d55;
+      font-family: 'Arial', sans-serif;
+      user-select: none;
     }
-  }
-
-  /* Smooth pulsing animation */
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      opacity: 1;
-      text-shadow: 0 0 8px #ff2d55;
+    
+    #pressMessage, #loveContainer {
+      font-weight: 700;
+      font-size: 6vw;
+      text-align: center;
+      cursor: pointer;
     }
-    50% {
-      transform: scale(1.05);
+    
+    /* Smaller on very narrow screens */
+    @media (max-width: 400px) {
+      #pressMessage, #loveContainer {
+        font-size: 10vw;
+      }
+    }
+    
+    /* The pink dots animation container - hidden initially */
+    #loveContainer {
+      display: none;
+      position: relative;
+      color: #ff2d55;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    /* The text "I love you" */
+    #loveText {
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Pink dots around "love" */
+    .dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #ff2d55;
+      border-radius: 50%;
       opacity: 0.8;
-      text-shadow: 0 0 20px #ff6b8a;
+      animation: blink 2s infinite;
     }
-  }
-</style>
+    
+    /* Different dot positions around the word "love" */
+    /* We'll position 5 pink dots around "love" */
+    .dot1 { top: -10px; left: 10%; animation-delay: 0s; }
+    .dot2 { top: 0; left: 0; animation-delay: 0.4s; }
+    .dot3 { top: 20px; left: 20%; animation-delay: 0.8s; }
+    .dot4 { top: 10px; left: 40%; animation-delay: 1.2s; }
+    .dot5 { top: 0; left: 60%; animation-delay: 1.6s; }
+    
+    /* Blink animation for dots */
+    @keyframes blink {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0.3; }
+    }
+    
+    /* Smooth pulse animation for the whole text */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 8px #ff2d55;
+      }
+      50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 20px #ff6b8a;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div class="love-text">I love you</div>
-
+  
+  <!-- Initial message shown -->
+  <div id="pressMessage">Press on the screen first</div>
+  
+  <!-- Hidden love text with pink dots -->
+  <div id="loveContainer">
+    <span id="loveText">I <span style="position:relative;">love
+      <span class="dot dot1"></span>
+      <span class="dot dot2"></span>
+      <span class="dot dot3"></span>
+      <span class="dot dot4"></span>
+      <span class="dot dot5"></span>
+    </span> you</span>
+  </div>
+  
+  <script>
+    const pressMessage = document.getElementById('pressMessage');
+    const loveContainer = document.getElementById('loveContainer');
+    
+    // When user clicks or taps anywhere, hide message and show love text
+    function showLove() {
+      pressMessage.style.display = 'none';
+      loveContainer.style.display = 'inline-block';
+      
+      // Remove the event listeners once triggered
+      document.removeEventListener('click', showLove);
+      document.removeEventListener('touchstart', showLove);
+    }
+    
+    // Listen for click or touchstart (for mobile)
+    document.addEventListener('click', showLove);
+    document.addEventListener('touchstart', showLove);
+  </script>
 </body>
 </html>
