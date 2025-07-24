@@ -28,7 +28,6 @@ const DOT_COUNT = 1000;
 const dots = [];
 const PINK = 'rgb(255, 105, 180)';
 
-// Heart shape parametric curve
 function heartShape(t) {
   const x = 16 * Math.sin(t) ** 3;
   const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
@@ -45,15 +44,24 @@ function createHeartPositions(centerX, centerY, scale, count) {
   return positions;
 }
 
-// Convert text into dot positions
 function textToDots(text, fontSize, spacing = 6) {
   const offCanvas = document.createElement('canvas');
   const offCtx = offCanvas.getContext('2d');
-  offCanvas.width = 800;
-  offCanvas.height = 200;
+  offCanvas.width = 1000;
+  offCanvas.height = 300;
+  
+  offCtx.font = `bold ${fontSize}px Arial`;
+  const metrics = offCtx.measureText(text);
+  const textWidth = Math.ceil(metrics.width);
+  const textHeight = fontSize;
+  
+  offCanvas.width = textWidth;
+  offCanvas.height = textHeight + 10;
+  
   offCtx.font = `bold ${fontSize}px Arial`;
   offCtx.fillStyle = 'white';
-  offCtx.fillText(text, 0, fontSize);
+  offCtx.textBaseline = "top";
+  offCtx.fillText(text, 0, 0);
   
   const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height).data;
   const positions = [];
@@ -65,19 +73,7 @@ function textToDots(text, fontSize, spacing = 6) {
       }
     }
   }
-
-  // Calculate text bounding box
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  positions.forEach(p => {
-    if (p.x < minX) minX = p.x;
-    if (p.x > maxX) maxX = p.x;
-    if (p.y < minY) minY = p.y;
-    if (p.y > maxY) maxY = p.y;
-  });
-
-  const textWidth = maxX - minX;
-  const textHeight = maxY - minY;
-
+  
   return { positions, textWidth, textHeight };
 }
 
