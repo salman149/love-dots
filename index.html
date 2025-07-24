@@ -41,7 +41,7 @@
 
     @media (max-width: 400px) {
       #pressMessage {
-        font-size: 10vw;
+        font-size: 8vw;
       }
     }
 
@@ -64,7 +64,6 @@
     const ctx = canvas.getContext('2d');
     const pressMessage = document.getElementById('pressMessage');
 
-    // Resize canvas to fill window
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -127,8 +126,8 @@
 
     const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT / 2);
 
-    // Smaller font size for smoother fit
-    const baseFontSize = window.innerWidth < 400 ? 40 : 60;
+    // Smaller font size on iPhone, bigger otherwise
+    const baseFontSize = window.innerWidth < 400 ? 30 : 60;
     const textData = textToDots('I LOVE YOU', baseFontSize);
     const textPositions = textData.positions.map(p => ({
       x: canvas.width / 2 - textData.textWidth / 2 + p.x,
@@ -148,7 +147,7 @@
         y: Math.random() * canvas.height,
         tx: Math.random() * canvas.width,
         ty: Math.random() * canvas.height,
-        speed: Math.random() * 0.02 + 0.01  // slower speed for smoother motion
+        speed: Math.random() * 0.035 + 0.015  // a bit faster easing than before
       });
     }
 
@@ -156,10 +155,8 @@
 
     function startAnimation() {
       showHeart = true;
-      // Fade out message smoothly
       pressMessage.style.opacity = 0;
 
-      // Remove listeners after fade
       setTimeout(() => {
         pressMessage.style.display = 'none';
       }, 1000);
@@ -180,7 +177,7 @@
           dot.tx = finalPositions[i % finalPositions.length].x;
           dot.ty = finalPositions[i % finalPositions.length].y;
         } else {
-          dot.tx += Math.sin(Date.now() / 1500 + i) * 0.05;  // slower & smoother
+          dot.tx += Math.sin(Date.now() / 1500 + i) * 0.05;
           dot.ty += Math.cos(Date.now() / 1500 + i) * 0.05;
         }
         dot.x += (dot.tx - dot.x) * dot.speed;
