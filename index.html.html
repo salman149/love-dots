@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Love You Dots</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const DOT_COUNT = 1000;
+const dots = [];
+const PINK = 'rgb(255, 105, 180)';
+
+function heartShape(t) {
+  const x = 16 * Math.sin(t) ** 3;
+  const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+  return { x, y: -y };
+}
+
+function createHeartPositions(centerX, centerY, scale, count) {
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    const t = Math.random() * Math.PI * 2;
+    const { x, y } = heartShape(t);
+    positions.push({ x: centerX + x * scale, y: centerY + y * scale });
+  }
+  return positions;
+}
+
+// Create text to dots
+function textToDots(text, fontSize, spacing = 6) {
+  const offCanvas = document.createElement('canvas');
+  const offCtx = offCanvas.getContext('2d');
+  offCanvas.width = 800;
+  offCanvas.height = 200;
+  offCtx.font = `bold ${fontSize}px Arial`;
+  offCtx.fillStyle = 'white';
+  offCtx.fillText(text, 50, 100);
+
+  const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height).data;
+  const positions = [];
+  for (let y = 0; y < offCanvas.height; y += spacing) {
+    for (let x = 0; x < offCanvas.width; x += spacing) {
+      const index = (y * offCanvas.width + x) * 4;
+      if (imageData[index + 3] > 128) {
+        positions.push({ x, y });
+      }
+    }
+  }
+  return { positions, width: offCanvas.width, height: offCanvas.height };
+}
+
+const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT / 2);
+const textData = textToDots('I LOVE YOU', 100);
+const textPositions = textData.positions.map(p => ({
+  x: canvas.width / 2 - textData.width / 2 + p.x,
+  y: canvas.height / 2 - textData.height / 2 + p.y
+}));
+let finalPositions = [...heartPositions, ...textPositions];
+while (finalPositions.length < DOT_COUNT) {
+  finalPositions = finalPositions.concat(
+    createHeartPositions(canvas.width / 2, canvas.height / 2, 20, DOT_COUNT - finalPositions.length)
+  );
+}
+
+for (let i = 0; i < DOT_COUNT; i++) {
+  dots.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    tx: Math.random() * canvas.width,
+    ty: Math.random() * canvas.height,
+    speed: Math.random() * 0.05 + 0.02
+  });
+}
+
+let showHeart = false;
+canvas.addEventListener('click', () => (showHeart = !showHeart));
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < DOT_COUNT; i++) {
+    const dot = dots[i];
+    if (showHeart) {
+      dot.tx = finalPositions[i % finalPositions.length].x;
+      dot.ty = finalPositions[i % finalPositions.length].y;
+    } else {
+      dot.tx += Math.sin(Date.now() / 1000 + i) * 0.1;
+      dot.ty += Math.cos(Date.now() / 1000 + i) * 0.1;
+    }
+    dot.x += (dot.tx - dot.x) * dot.speed;
+    dot.y += (dot.ty - dot.y) * dot.speed;
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, 2, 0, Math.PI * 2);
+    ctx.fillStyle = PINK;
+    ctx.fill();
+  }
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
