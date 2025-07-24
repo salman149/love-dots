@@ -71,7 +71,7 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const DOT_COUNT = 1500; // increase total dots for better detail
+    const DOT_COUNT = 2200; // More dots for better detail
     const dots = [];
     const PINK = 'rgb(255, 105, 180)';
 
@@ -93,12 +93,15 @@
     const heartScale = Math.min(scaleX, scaleY);
 
     const baseFontSize = heartScale * 2.5;
-    const jitterAmount = heartScale * 0.45; // more jitter for thickness
+    const jitterAmount = heartScale * 0.45;
     const heartDotRadius = heartScale * 0.15;
-    const textDotRadius = heartScale * 0.12;
 
-    // Increase heart dots to 85% of total dots for thickness
-    const heartDotCount = Math.floor(DOT_COUNT * 0.85);
+    // Assign dots: 60% heart, 40% text for thick letters
+    const heartDotCount = Math.floor(DOT_COUNT * 0.6);
+    const textDotCount = DOT_COUNT - heartDotCount;
+
+    // Text dot size bigger for thick letters
+    const textDotRadius = heartScale * 0.22;
 
     function createHeartPositions(centerX, centerY, scale, count) {
       const positions = [];
@@ -115,8 +118,8 @@
       return positions;
     }
 
-    // Decrease spacing for denser text dots
-    function textToDots(text, fontSize, spacing = 4) {
+    // Very dense text dots with smaller spacing for thick letters
+    function textToDots(text, fontSize, spacing = 3) {
       const offCanvas = document.createElement('canvas');
       const offCtx = offCanvas.getContext('2d');
       offCanvas.width = 1000;
@@ -151,13 +154,19 @@
 
     const heartPositions = createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, heartDotCount);
 
-    const textData = textToDots('I LOVE YOU', baseFontSize);
-    const textPositions = textData.positions.map(p => ({
+    // Generate denser dots than we need; will slice to textDotCount
+    const textData = textToDots('I LOVE YOU', baseFontSize, 3);
+    // Slice text dots to exact needed count for better performance if needed
+    const slicedTextPositions = textData.positions.slice(0, textDotCount);
+
+    const textPositions = slicedTextPositions.map(p => ({
       x: canvas.width / 2 - textData.textWidth / 2 + p.x,
       y: canvas.height / 2 - textData.textHeight / 2 + p.y
     }));
 
     let finalPositions = [...heartPositions, ...textPositions];
+
+    // Just in case, pad finalPositions to DOT_COUNT
     while (finalPositions.length < DOT_COUNT) {
       finalPositions = finalPositions.concat(
         createHeartPositions(canvas.width / 2, canvas.height / 2, heartScale, DOT_COUNT - finalPositions.length)
